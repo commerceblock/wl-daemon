@@ -4,11 +4,8 @@ COPY . /usr/src/package
 
 RUN set -x \
     && cd /usr/src/package \
-    && export FLASK_ENV=development \
-    && mkdir -p /usr/local/var/log \
-    && mkdir -p /storage/kycfile/whitelisted \
-    && mkdir -p /storage/kycfile/consider \
-    && mkdir -p /storage/kycfile/onboarded \
+    && python3 setup.py build \
+    && python3 setup.py install \
     && cp docker-entrypoint.sh /
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
