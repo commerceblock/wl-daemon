@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 from time import sleep, time
@@ -9,17 +10,15 @@ BLOCK_TIME_DEFAULT = 60
 
 class Whitelisting(DaemonThread):
     def __init__(self, conf):
-    super().__init__()
-    self.conf = conf
-    self.ocean = getoceand(self.conf)
-    self.interval = BLOCK_TIME_DEFAULT if "blocktime" not in conf else conf["blocktime"]
-    self.logger = logging.getLogger(self.__class__.__name__)
+        super().__init__()
+        self.conf = conf
+        self.ocean = getoceand(self.conf)
+        self.interval = BLOCK_TIME_DEFAULT if "blocktime" not in conf else conf["blocktime"]
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def run(self):
         while not self.stopped():
             sleep(self.interval - time() % self.interval)
-            start_time = int(time())
-            step = int(time()) % (self.interval * self.total) / self.interval
 
             height = self.get_blockcount()
             if height == None:
@@ -43,23 +42,25 @@ class Whitelisting(DaemonThread):
         return self.rpc_retry(self.ocean.getblockcount)
 
     def onboard_kycfile(self, kycfile):
-        return rpc_func(self.ocean.onboarduser, kycfile)
+        return self.ocean.onboarduser(kycfile)
 
     def onboard_kycfiles(self):
         # r=root, d=directories, f = files
-        for r, d, f in os.walk(self.conf.kyc_indir):
+        self.logger.info("searching {} for kycfiles".format(self.conf["kyc_indir"]))
+        for r, d, f in os.walk(self.conf["kyc_indir"]):
             for file in f:
                 path=os.path.join(r, file)
                 try:
-                    onboard_kycfile(path)
+                    self.logger.info("onboarding file {}".format(path))
+                    self.onboard_kycfile(path)
                 except Exception as e:
-                    self.logger.warning(e)
-                    mess='when onboarding kycfile ' + path
-                    self.logger.warning(mess)
+                    self.logger.error(e)
+                    mess='error when onboarding kycfile ' + path
+                    self.logger.error(mess)
                     return
                 mess='onboarded kycfile ' + path
                 self.logger.info(mess)
-                outpath=os.path.join(self.conf.kyc_outdir, file)
+                outpath=os.path.join(self.conf['kyc_outdir'], file)
                 mess='moved kycfile ' + path + ' to ' + outpath 
                 self.logger.info(mess)
 

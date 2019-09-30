@@ -2,8 +2,10 @@
 import os
 import logging
 import json
+import argparse
 from .test_framework.authproxy import AuthServiceProxy, JSONRPCException
 from .connectivity import getoceand, loadConfig
+from .whitelisting import Whitelisting
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -31,16 +33,16 @@ def main():
     conf["kyc_indir"] = args.kyc_indir
     conf["kyc_outdir"] = args.kyc_outdir
     
-    wl_daemon = Whitelisting(conf, nodes, inrate, inprd, inaddr, inscript, signer)
+    wl_daemon = Whitelisting(conf)
     wl_daemon.start()
 
     try:
         while 1:
-            if signing_node.stopped():
+            if wl_daemon.stopped():
                 raise Exception("Node thread has stopped")
             time.sleep(0.01)
     except KeyboardInterrupt:
-        signing_node.stop()
+        wl_daemon.stop()
 
 if __name__ == "__main__":
     main()
