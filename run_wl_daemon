@@ -1,0 +1,3 @@
+#!/usr/bin/env python3
+from wl-daemon import wl-daemon
+wl-daemon.main()

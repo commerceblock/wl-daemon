@@ -1,0 +1,15 @@
+---
+version: '3.6'
+services:
+  cb-onfido-webhook:
+    image: cb_idcheck
+    networks:
+      - default
+    ports:
+      - "59327:59327"
+    volumes:
+      - ~/kycfile/whitelist:/storage/kycfile/whitelist
+      - ~/kycfile/consider:/storage/kycfile/consider
+      - ~/tokens:/run/secrets
+    command: >-
+      python3 webhook.py --host 0.0.0.0 --port 59327 --host 0.0.0.0 --log idchecklog.txt --id_api onfido --whitelisted_dir=/storage/kycfile/whitelist --consider_dir=/storage/kycfile/consider
