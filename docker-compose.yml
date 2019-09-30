@@ -11,6 +11,7 @@ services:
       - ~/kycfile/whitelist:/storage/kycfile/whitelist
       - ~/kycfile/consider:/storage/kycfile/consider
       - ~/tokens:/run/secrets
+      - ~/Projects/wl-daemon/shared:/shared
     command: >-
-       ./run_wl_daemon --rpconnect 0.0.0.0 --rpcport 32948 --rpcuser ${OCEAN_RPC_USER:-ocean} --rpcpassword ${OCEAN_RPC_PASS:-oceanpass} --kyc_indir shared/whitelist --kyc_outdir shared/onboarded
+      ./run_wl_daemon --rpconnect 0.0.0.0 --rpcport 32948 --rpcuser ${OCEAN_RPC_USER:-ocean} --rpcpassword ${OCEAN_RPC_PASS:-oceanpass} --kyc_indir shared/whitelist --kyc_outdir shared/onboarded
       
