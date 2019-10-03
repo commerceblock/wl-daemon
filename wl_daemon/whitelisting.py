@@ -64,6 +64,29 @@ class Whitelisting(DaemonThread):
                 mess='moved kycfile ' + path + ' to ' + outpath 
                 self.logger.info(mess)
 
+    def blacklist_kycfile(self, kycfile):
+        return self.ocean.blacklistuser(kycfile)
+                
+    def blacklist_kycfiles(self):
+        # r=root, d=directories, f = files
+        self.logger.info("searching {} for kycfiles".format(self.conf["kyc_toblacklistdir"]))
+        for r, d, f in os.walk(self.conf["kyc_toblacklistdir"]):
+            for file in f:
+                path=os.path.join(r, file)
+                try:
+                    self.logger.info("blacklisting file {}".format(path))
+                    self.blacklist_kycfile(path)
+                except Exception as e:
+                    self.logger.error(e)
+                    mess='error when blacklisting kycfile ' + path
+                    self.logger.error(mess)
+                    return
+                mess='blacklisted kycfile ' + path
+                self.logger.info(mess)
+                outpath=os.path.join(self.conf['kyc_blacklisteddir'], file)
+                mess='moved kycfile ' + path + ' to ' + outpath 
+                self.logger.info(mess)
+
                     
     
 
