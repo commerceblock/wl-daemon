@@ -30,16 +30,16 @@ class Whitelisting(DaemonThread):
         self.logger.info("searching {} for kycfiles".format(self.conf["kyc_indir"]))
         for r, d, f in os.walk(self.conf["kyc_indir"]):
             for file in f:
-                if not f in self.whitelisted:
-                    self.towhitelist.add(f)
+                if not file in self.whitelisted:
+                    self.towhitelist.add(file)
 
         self.logger.info("searching {} for kycfiles".format(self.conf["kyc_toblacklistdir"]))
         for r, d, f in os.walk(self.conf["kyc_toblacklistdir"]):
             for file in f:
-                if f in self.towhitelist:
-                    self.towhitelist.remove(f)
-                if not f in self.blacklisted:
-                    self.toblacklist.add(f)
+                if file in self.towhitelist:
+                    self.towhitelist.remove(file)
+                if not file in self.blacklisted:
+                    self.toblacklist.add(file)
         
     def update_status(self):
         for f in self.towhitelist:
