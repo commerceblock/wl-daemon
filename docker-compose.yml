@@ -9,11 +9,9 @@ services:
       - "32948:32948"
     volumes:
       - ~/kycfile/whitelist:/storage/kycfile/whitelist
-      - ~/kycfile/onboarded:/storage/kycfile/onboarded
       - ~/kycfile/plain:/storage/kycfile/plain
-      - ~/kycfile/blacklisted:/storage/kycfile/blacklisted
       - ~/kycfile/toblacklist:/storage/kycfile/toblacklist
       - ~/Projects/wl-daemon/shared:/shared
     command: >-
-      ./run_wl_daemon --rpconnect 0.0.0.0 --rpcport 32948 --rpcuser ${OCEAN_RPC_USER:-ocean} --rpcpassword ${OCEAN_RPC_PASS:-oceanpass} --kyc_indir shared/whitelist --kyc_outdir shared/onboarded
+      ./run_wl_daemon --rpconnect 0.0.0.0 --rpcport 32948 --rpcuser ${OCEAN_RPC_USER:-ocean} --rpcpassword ${OCEAN_RPC_PASS:-oceanpass} --kyc_indir shared/whitelist --kyc_toblacklist shared/onboarded
       
