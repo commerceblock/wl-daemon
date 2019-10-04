@@ -17,7 +17,6 @@ class Whitelisting(DaemonThread):
         self.interval = BLOCK_TIME_DEFAULT if "blocktime" not in conf else conf["blocktime"]
         self.logger = logging.getLogger(self.__class__.__name__)
         self.init_status()
-        self.update_files()
         self.previous_block = -1
 
     def init_status(self):
@@ -71,6 +70,7 @@ class Whitelisting(DaemonThread):
 
             height = self.get_blockcount()
             if height == None:
+                self.logger.info("blockcount:{}".format("None"))
                 continue
             if height <= self.previous_height:
                 self.logger.warning("blockcount:{} is not greater that previous blockcount:{}. Whitelist will not be updated.".format(self.previous_height))
