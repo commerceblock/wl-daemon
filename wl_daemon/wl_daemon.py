@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument('--kyc_outdir', required=True, type=str, help="Destination of onboarded kycfiles")
     parser.add_argument('--kyc_toblacklistdir', required=True, type=str, help="Dir containing kycfiles to be blacklisted")
     parser.add_argument('--kyc_blacklisteddir', required=True, type=str, help="Destination of blacklisted kycfiles")
+    parser.add_argument('--kyc_plaindir', required=True, type=str, help="A folder for storing plaintext kycfiles")
     return parser.parse_args()
 
 def main():
