@@ -65,6 +65,7 @@ class Whitelisting(DaemonThread):
         
                 
     def run(self):
+        self.logger.info("Daemon started")
         while not self.stopped():
             sleep(self.interval - time() % self.interval)
 
