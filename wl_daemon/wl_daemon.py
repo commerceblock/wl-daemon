@@ -15,10 +15,7 @@ def parse_args():
     parser.add_argument('--rpcuser', required=True, type=str, help="RPC username for client")
     parser.add_argument('--rpcpassword', required=True, type=str, help="RPC password for client")
     parser.add_argument('--kyc_indir', required=True, type=str, help="Dir containing kycfiles to be onboarded")
-    parser.add_argument('--kyc_outdir', required=True, type=str, help="Destination of onboarded kycfiles")
     parser.add_argument('--kyc_toblacklistdir', required=True, type=str, help="Dir containing kycfiles to be blacklisted")
-    parser.add_argument('--kyc_blacklisteddir', required=True, type=str, help="Destination of blacklisted kycfiles")
-    parser.add_argument('--kyc_plaindir', required=True, type=str, help="A folder for storing plaintext kycfiles")
     return parser.parse_args()
 
 def main():
@@ -35,9 +32,7 @@ def main():
     conf["rpcport"] = args.rpcport
     conf["rpcconnect"] = args.rpconnect
     conf["kyc_indir"] = args.kyc_indir
-    conf["kyc_outdir"] = args.kyc_outdir
     conf["kyc_toblacklistdir"] = args.kyc_toblacklistdir
-    conf["kyc_blacklisteddir"] = args.kyc_blacklisteddir
     
     
     wl_daemon = Whitelisting(conf)
