@@ -6,7 +6,7 @@ from .daemon import DaemonThread
 from .test_framework.authproxy import JSONRPCException
 from .connectivity import getoceand
 
-BLOCK_TIME_DEFAULT = 10
+BLOCK_TIME_DEFAULT = 60
 TRANSACTION_LIMIT = 1000
 
 class Whitelisting(DaemonThread):
