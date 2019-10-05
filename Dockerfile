@@ -6,7 +6,8 @@ RUN set -x \
     && cd /usr/src/package \
     && python3 setup.py build \
     && python3 setup.py install \
-    && cp run_wl_daemon /usr/bin \
-    && cp docker-entrypoint.sh /
+    && pip3 install -r requirements.txt 
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

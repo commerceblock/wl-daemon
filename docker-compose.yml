@@ -4,13 +4,11 @@ services:
   wl-daemon-1:
     image: wl_daemon
     networks:
-      - default
-    ports:
-      - "32948:32948"
+      - oeb7b3d77c2e2
     volumes:
       - ~/kycfile/whitelist:/storage/kycfile/whitelist
       - ~/kycfile/toblacklist:/storage/kycfile/toblacklist
       - ~/Projects/wl-daemon/shared:/shared
     command: >-
-      ./run_wl_daemon --rpconnect 0.0.0.0 --rpcport 32948 --rpcuser ${OCEAN_RPC_USER:-ocean} --rpcpassword ${OCEAN_RPC_PASS:-oceanpass} --kyc_indir shared/whitelist --kyc_toblacklist shared/toblacklist
+      python3 -u -m wl_daemon --rpconnect ocean_gt_whitelisting_node_1_1 --rpcport 8332 --rpcuser ${OCEAN_RPC_USER:-ocean} --rpcpassword ${OCEAN_RPC_PASS:-oceanpass} --kyc_indir shared/whitelist --kyc_toblacklist shared/toblacklist
       

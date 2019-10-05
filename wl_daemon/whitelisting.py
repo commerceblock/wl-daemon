@@ -6,7 +6,7 @@ from .daemon import DaemonThread
 from .test_framework.authproxy import JSONRPCException
 from .connectivity import getoceand
 
-BLOCK_TIME_DEFAULT = 60
+BLOCK_TIME_DEFAULT = 10
 TRANSACTION_LIMIT = 1000
 
 class Whitelisting(DaemonThread):
@@ -17,7 +17,7 @@ class Whitelisting(DaemonThread):
         self.interval = BLOCK_TIME_DEFAULT if "blocktime" not in conf else conf["blocktime"]
         self.logger = logging.getLogger(self.__class__.__name__)
         self.init_status()
-        self.previous_block = -1
+        self.previous_height = -1
 
     def init_status(self):
         self.towhitelist=set()
@@ -55,12 +55,12 @@ class Whitelisting(DaemonThread):
                 self.blacklisted.add(f)
                 self.toblacklist.remove(f)
 
-    def is_whitelisted(self, d, f):
+    def is_whitelisted(self, p):
         try:
-            bResult=self.ocean.validatekycfile(kycfile)["iswhitelisted"]
+            bResult=self.ocean.validatekycfile(p)["iswhitelisted"]
             return bResult
         except Exception as e:
-            self.logger.warning("{}\nError validating kycfile: ".format(e))
+            self.logger.warning("Error validating kycfile:{}".format(e))
             return False
         
                 
@@ -74,7 +74,7 @@ class Whitelisting(DaemonThread):
                 self.logger.info("blockcount:{}".format("None"))
                 continue
             if height <= self.previous_height:
-                self.logger.warning("blockcount:{} is not greater that previous blockcount:{}. Whitelist will not be updated.".format(self.previous_height))
+                self.logger.warning("blockcount:{} is not greater that previous blockcount:{}. Whitelist will not be updated.".format(height, self.previous_height))
                 continue
 
             self.logger.info("blockcount:{}".format(height))
@@ -105,14 +105,14 @@ class Whitelisting(DaemonThread):
         for f in self.towhitelist:
             p=os.path.join(self.conf["kyc_indir"], f)
             try:
-                self.logger.info("onboarding file {}".format(path))
-                self.onboard_kycfile(path)
+                self.logger.info("onboarding file {}".format(p))
+                self.onboard_kycfile(p)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when onboarding kycfile ' + path
+                mess='error when onboarding kycfile ' + p
                 self.logger.error(mess)
                 continue
-            mess='onboarded kycfile ' + path
+            mess='onboarded kycfile ' + p
             self.logger.info(mess)
         
     def blacklist_kycfile(self, kycfile):
@@ -123,14 +123,14 @@ class Whitelisting(DaemonThread):
         for f in self.toblacklist:
             p=os.path.join(self.conf["kyc_toblacklistdir"], f)
             try:
-                self.logger.info("blacklisting file {}".format(path))
-                self.blacklist_kycfile(path)
+                self.logger.info("blacklisting file {}".format(p))
+                self.blacklist_kycfile(p)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when blacklisting kycfile ' + path
+                mess='error when blacklisting kycfile ' + p
                 self.logger.error(mess)
                 continue
-            mess='blackclisted kycfile ' + path
+            mess='blackclisted kycfile ' + p
             self.logger.info(mess)
 
 
