@@ -32,6 +32,7 @@ class Whitelisting(DaemonThread):
                 if not file in self.whitelisted:
                     self.towhitelist.add(file)
 
+
         self.logger.info("searching {} for kycfiles".format(self.conf["kyc_toblacklistdir"]))
         for r, d, f in os.walk(self.conf["kyc_toblacklistdir"]):
             for file in f:
@@ -41,26 +42,39 @@ class Whitelisting(DaemonThread):
                     self.toblacklist.add(file)
         
     def update_status(self):
+        tmp=set()
         for f in self.towhitelist:
-            if f in self.toblacklist:
-                self.towhitelist.remove(f)
             p=os.path.join(self.conf["kyc_indir"], f)
             if self.is_whitelisted(p):
                 self.whitelisted.add(f)
-                self.towhitelist.remove(f)
+                tmp.add(f)
+        if len(tmp) > 0:
+            self.towhitelist=self.towhitelist.difference(tmp)
 
+        tmp=set()
         for f in self.toblacklist:
             p=os.path.join(self.conf["kyc_toblacklistdir"], f)
             if not self.is_whitelisted(p):
                 self.blacklisted.add(f)
-                self.toblacklist.remove(f)
+                tmp.add(f)
+        if len(tmp) > 0:
+            self.toblacklist=self.toblacklist.difference(tmp)
+
+        #Confirm blacklisted
+        tmp=set()
+        for f in self.blacklisted:
+            p=os.path.join(self.conf["kyc_toblacklistdir"], f)
+            if self.is_whitelisted(p):
+                tmp.add(set)
+        if len(tmp) > 0 :
+            self.blacklisted=self.blacklisted.difference(tmp)
 
     def is_whitelisted(self, p):
         try:
             bResult=self.ocean.validatekycfile(p)["iswhitelisted"]
             return bResult
         except Exception as e:
-            self.logger.warning("Error validating kycfile:{}".format(e))
+            self.logger.warning("Error validating kycfile{}: {}".format(p, e))
             return False
         
                 
@@ -70,14 +84,9 @@ class Whitelisting(DaemonThread):
             sleep(self.interval - time() % self.interval)
 
             height = self.get_blockcount()
-            if height == None:
-                self.logger.info("blockcount:{}".format("None"))
-                continue
-            if height <= self.previous_height:
-                self.logger.warning("blockcount:{} is not greater that previous blockcount:{}. Whitelist will not be updated.".format(height, self.previous_height))
-                continue
-
             self.logger.info("blockcount:{}".format(height))
+            if height <= self.previous_height:
+                continue
             self.update_files()
             self.update_status()
             self.onboard_kycfiles()
