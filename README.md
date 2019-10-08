@@ -2,7 +2,9 @@
 
 Daemon for processing of kycfiles.
 
-This will monitor a directory for kycfiles, onboard the addresses contained in the files, and move the files to a new location.
+This will monitor a directory for kycfiles, and onboard the addresses contained in the files.
+
+Addresses can be blacklisted by moving the file to the /"tobalcklist/" folder
 
 ## Installation
 
@@ -10,5 +12,5 @@ This will monitor a directory for kycfiles, onboard the addresses contained in t
 
 ## Usage
 
-    $ python3 wl-daemon.py --kycindir kycfiles_input_dir --kycoutdir kycfiles_output_dir --rpcconnect ocean_node_ip_addr --rpcport ocean_node_rpcport --user ocean_node_user_name --pass ocean_node_password 
+    $ ./run_wl_daemon --kyc_indir kycfiles_input_dir --toblacklistdir kyc_blacklist_dir --rpcconnect ocean_node_ip_addr --rpcport ocean_node_rpcport --rpcuser ocean_node_user_name --rpcpassword ocean_node_password 
 
