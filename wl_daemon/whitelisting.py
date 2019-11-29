@@ -85,8 +85,9 @@ class Whitelisting(DaemonThread):
         tmp=set()
         for f in self.blacklisted:
             p=os.path.join(self.conf["kyc_toblacklistdir"], f)
-            if self.is_whitelisted(p):
-                tmp.add(set)
+            if f in self.toblacklist:
+                if self.is_whitelisted(p):
+                    tmp.add(set)
         if len(tmp) > 0 :
             self.blacklisted=self.blacklisted.difference(tmp)
 
