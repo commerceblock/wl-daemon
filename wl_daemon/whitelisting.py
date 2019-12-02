@@ -131,9 +131,9 @@ class Whitelisting(DaemonThread):
         return self.ocean.onboarduser(kycfile)
 
     def onboard_kycfiles(self):
+        self.logger.info("onboarding {} files".format(len(self.towhitelist)))
         for f in self.towhitelist:
             try:
-                self.logger.info("onboarding file {}".format(f))
                 txid=self.onboard_kycfile(f)
                 self.pendingtx.add(txid)
             except Exception as e:
@@ -150,9 +150,9 @@ class Whitelisting(DaemonThread):
         return self.ocean.blacklistuser(kycfile)
                 
     def blacklist_kycfiles(self):
+        self.logger.info("blacklisting {} files".format(len(self.toblacklist)))
         for f in self.toblacklist:
             try:
-                self.logger.info("blacklisting file {}".format(f))
                 txid=self.blacklist_kycfile(f)
                 self.pendingtx.add(txid)
             except Exception as e:
