@@ -63,6 +63,7 @@ class Whitelisting(DaemonThread):
 
         
     def update_status(self):
+        self.logger.info("Updating status.")
         tmp=set()
         for f in self.towhitelist:
             if self.is_whitelisted(f):
@@ -142,7 +143,6 @@ class Whitelisting(DaemonThread):
                         if 'No whitelist asset available' in e.error['message']:
                             break
                 continue
-            mess='onboarded kycfile ' + f
             self.logger.info(mess)
         
     def blacklist_kycfile(self, kycfile):
@@ -163,7 +163,6 @@ class Whitelisting(DaemonThread):
                         if 'No whitelist asset available' in e.error['message']:
                             break
                 continue
-            mess='blackclisted kycfile ' + f
             self.logger.info(mess)
 
 
