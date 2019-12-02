@@ -143,7 +143,6 @@ class Whitelisting(DaemonThread):
                         if 'No whitelist asset available' in e.error['message']:
                             break
                 continue
-            self.logger.info(mess)
         
     def blacklist_kycfile(self, kycfile):
         return self.ocean.blacklistuser(kycfile)
@@ -163,7 +162,6 @@ class Whitelisting(DaemonThread):
                         if 'No whitelist asset available' in e.error['message']:
                             break
                 continue
-            self.logger.info(mess)
 
 
                     
