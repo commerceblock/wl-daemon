@@ -140,6 +140,10 @@ class Whitelisting(DaemonThread):
                 self.logger.error(e)
                 mess='error when onboarding kycfile ' + p
                 self.logger.error(mess)
+                if hasattr(e, 'error'):
+                    if 'message' in e.error:
+                        if 'No whitelist asset available' in e.error['message']:
+                            break
                 continue
             mess='onboarded kycfile ' + p
             self.logger.info(mess)
@@ -158,6 +162,10 @@ class Whitelisting(DaemonThread):
                 self.logger.error(e)
                 mess='error when blacklisting kycfile ' + p
                 self.logger.error(mess)
+                if hasattr(e, 'error'):
+                    if 'message' in e.error:
+                        if 'No whitelist asset available' in e.error['message']:
+                            break
                 continue
             mess='blackclisted kycfile ' + p
             self.logger.info(mess)
