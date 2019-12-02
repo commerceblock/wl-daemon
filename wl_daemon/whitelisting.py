@@ -130,7 +130,6 @@ class Whitelisting(DaemonThread):
         return self.ocean.onboarduser(kycfile)
 
     def onboard_kycfiles(self):
-        self.logger.info("onboarding kycfiles")
         for f in self.towhitelist:
             p=os.path.join(self.conf["kyc_indir"], f)
             try:
@@ -149,7 +148,6 @@ class Whitelisting(DaemonThread):
         return self.ocean.blacklistuser(kycfile)
                 
     def blacklist_kycfiles(self):
-        self.logger.info("blacklisting kycfiles")
         for f in self.toblacklist:
             p=os.path.join(self.conf["kyc_toblacklistdir"], f)
             try:
