@@ -49,24 +49,23 @@ class Whitelisting(DaemonThread):
         for r, d, f in os.walk(self.conf["kyc_indir"]):
             for file in f:
                 if not file in self.whitelisted:
-                    self.towhitelist.add(file)
+                    self.towhitelist.add(os.path.join(r, file))
 
         self.toblacklist=set()
         self.logger.info("searching {} for kycfiles".format(self.conf["kyc_toblacklistdir"]))
         for r, d, f in os.walk(self.conf["kyc_toblacklistdir"]):
             for file in f:
                 if file in self.towhitelist:
-                    self.towhitelist.remove(file)
+                    self.towhitelist.remove(os.path.join(r, file))
                 if not file in self.blacklisted:
-                    self.toblacklist.add(file)
+                    self.toblacklist.add(os.path.join(r, file))
 
 
         
     def update_status(self):
         tmp=set()
         for f in self.towhitelist:
-            p=os.path.join(self.conf["kyc_indir"], f)
-            if self.is_whitelisted(p):
+            if self.is_whitelisted(f):
                 self.whitelisted.add(f)
                 tmp.add(f)
             
@@ -75,8 +74,7 @@ class Whitelisting(DaemonThread):
         
         tmp=set()
         for f in self.toblacklist:
-            p=os.path.join(self.conf["kyc_toblacklistdir"], f)
-            if not self.is_whitelisted(p):
+            if not self.is_whitelisted(f):
                 self.blacklisted.add(f)
                 tmp.add(f)
                        
@@ -131,21 +129,20 @@ class Whitelisting(DaemonThread):
 
     def onboard_kycfiles(self):
         for f in self.towhitelist:
-            p=os.path.join(self.conf["kyc_indir"], f)
             try:
-                self.logger.info("onboarding file {}".format(p))
-                txid=self.onboard_kycfile(p)
+                self.logger.info("onboarding file {}".format(f))
+                txid=self.onboard_kycfile(f)
                 self.pendingtx.add(txid)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when onboarding kycfile ' + p
+                mess='error when onboarding kycfile ' + f
                 self.logger.error(mess)
                 if hasattr(e, 'error'):
                     if 'message' in e.error:
                         if 'No whitelist asset available' in e.error['message']:
                             break
                 continue
-            mess='onboarded kycfile ' + p
+            mess='onboarded kycfile ' + f
             self.logger.info(mess)
         
     def blacklist_kycfile(self, kycfile):
@@ -153,21 +150,20 @@ class Whitelisting(DaemonThread):
                 
     def blacklist_kycfiles(self):
         for f in self.toblacklist:
-            p=os.path.join(self.conf["kyc_toblacklistdir"], f)
             try:
-                self.logger.info("blacklisting file {}".format(p))
-                txid=self.blacklist_kycfile(p)
+                self.logger.info("blacklisting file {}".format(f))
+                txid=self.blacklist_kycfile(f)
                 self.pendingtx.add(txid)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when blacklisting kycfile ' + p
+                mess='error when blacklisting kycfile ' + f
                 self.logger.error(mess)
                 if hasattr(e, 'error'):
                     if 'message' in e.error:
                         if 'No whitelist asset available' in e.error['message']:
                             break
                 continue
-            mess='blackclisted kycfile ' + p
+            mess='blackclisted kycfile ' + f
             self.logger.info(mess)
 
 
