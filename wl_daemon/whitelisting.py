@@ -69,28 +69,24 @@ class Whitelisting(DaemonThread):
             if self.is_whitelisted(p):
                 self.whitelisted.add(f)
                 tmp.add(f)
-        if len(tmp) > 0:
-            self.towhitelist=self.towhitelist.difference(tmp)
-
+            
+        self.towhitelist=self.towhitelist.difference(tmp)
+        self.blacklisted=self.blacklisted.difference(tmp)
+        
         tmp=set()
         for f in self.toblacklist:
             p=os.path.join(self.conf["kyc_toblacklistdir"], f)
             if not self.is_whitelisted(p):
                 self.blacklisted.add(f)
                 tmp.add(f)
-        if len(tmp) > 0:
-            self.toblacklist=self.toblacklist.difference(tmp)
+                       
+        self.toblacklist=self.toblacklist.difference(tmp)
+        self.whitelisted=self.whitelisted.difference(tmp)
+        #toblacklist overrides towhitelist
+        self.towhitelist=self.towhitelist.difference(self.toblacklist)
 
-        #Confirm blacklisted
-        tmp=set()
-        for f in self.blacklisted:
-            p=os.path.join(self.conf["kyc_toblacklistdir"], f)
-            if f in self.toblacklist:
-                if self.is_whitelisted(p):
-                    tmp.add(set)
-        if len(tmp) > 0 :
-            self.blacklisted=self.blacklisted.difference(tmp)
-
+        
+        
     def is_whitelisted(self, p):
         try:
             bResult=self.ocean.validatekycfile(p)["iswhitelisted"]
