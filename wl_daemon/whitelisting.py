@@ -5,6 +5,7 @@ from time import sleep, time
 from .daemon import DaemonThread
 from .test_framework.authproxy import JSONRPCException
 from .connectivity import getoceand
+import hashlib
 
 BLOCK_TIME_DEFAULT = 60
 TRANSACTION_LIMIT = 1000
@@ -18,6 +19,8 @@ class Whitelisting(DaemonThread):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.init_status()
         self.previous_height = -1
+        self.FILEBLOCKSIZE = 65536
+
 
     def init_status(self):
         self.towhitelist=set()
@@ -25,6 +28,7 @@ class Whitelisting(DaemonThread):
         self.toblacklist=set()
         self.blacklisted=set()
         self.pendingtx=set()
+        self.path_dict=dict()
 
     #Returns true if there are no pending transactions
     def update_pendingtx(self):
@@ -48,43 +52,62 @@ class Whitelisting(DaemonThread):
         self.logger.info("searching {} for kycfiles".format(self.conf["kyc_indir"]))
         for r, d, f in os.walk(self.conf["kyc_indir"]):
             for file in f:
-                if not file in self.whitelisted:
-                    self.towhitelist.add(file)
+                p=os.path.join(r, file)
+                hasher=hashlib.md5()
+                with open (p, "rb") as myfile:
+                    buf=myfile.read(self.FILEBLOCKSIZE)
+                    while len(buf) > 0:
+                        hasher.update(buf)
+                        buf=myfile.read(self.FILEBLOCKSIZE)
+                    h=hasher.digest()
+                    self.path_dict[h]=p
+                    if not h in self.whitelisted:
+                        self.towhitelist.add(h)
 
         self.toblacklist=set()
         self.logger.info("searching {} for kycfiles".format(self.conf["kyc_toblacklistdir"]))
         for r, d, f in os.walk(self.conf["kyc_toblacklistdir"]):
             for file in f:
-                if file in self.towhitelist:
-                    self.towhitelist.remove(file)
-                if not file in self.blacklisted:
-                    self.toblacklist.add(file)
+                p=os.path.join(r, file)
+                hasher=hashlib.md5()
+                with open (p, "rb") as myfile:
+                    buf=myfile.read(self.FILEBLOCKSIZE)
+                    while len(buf) > 0:
+                        hasher.update(buf)
+                        buf=myfile.read(self.FILEBLOCKSIZE)
+                    h=hasher.digest()
+                    self.path_dict[h]=p
+                    if h in self.towhitelist:
+                        self.towhitelist.remove(h)
+                    if not h in self.blacklisted:
+                        self.toblacklist.add(h)
 
 
         
     def update_status(self):
+        self.logger.info("Updating status...")
         tmp=set()
-        for f in self.towhitelist:
-            p=os.path.join(self.conf["kyc_indir"], f)
-            if self.is_whitelisted(p):
-                self.whitelisted.add(f)
-                tmp.add(f)
+        for h in self.towhitelist:
+            f=self.path_dict[h]
+            if self.is_whitelisted(f):
+                self.whitelisted.add(h)
+                tmp.add(h)
             
         self.towhitelist=self.towhitelist.difference(tmp)
         self.blacklisted=self.blacklisted.difference(tmp)
         
         tmp=set()
-        for f in self.toblacklist:
-            p=os.path.join(self.conf["kyc_toblacklistdir"], f)
-            if not self.is_whitelisted(p):
-                self.blacklisted.add(f)
-                tmp.add(f)
+        for h in self.toblacklist:
+            f=self.path_dict[h]
+            if not self.is_whitelisted(f):
+                self.blacklisted.add(h)
+                tmp.add(h)
                        
         self.toblacklist=self.toblacklist.difference(tmp)
         self.whitelisted=self.whitelisted.difference(tmp)
         #toblacklist overrides towhitelist
         self.towhitelist=self.towhitelist.difference(self.toblacklist)
-
+        self.logger.info("...finished updating status.")
         
         
     def is_whitelisted(self, p):
@@ -130,39 +153,41 @@ class Whitelisting(DaemonThread):
         return self.ocean.onboarduser(kycfile)
 
     def onboard_kycfiles(self):
-        self.logger.info("onboarding kycfiles")
-        for f in self.towhitelist:
-            p=os.path.join(self.conf["kyc_indir"], f)
+        self.logger.info("onboarding {} files".format(len(self.towhitelist)))
+        for h in self.towhitelist:
             try:
-                self.logger.info("onboarding file {}".format(p))
-                txid=self.onboard_kycfile(p)
+                f=self.path_dict[h]
+                txid=self.onboard_kycfile(f)
                 self.pendingtx.add(txid)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when onboarding kycfile ' + p
+                mess='error when onboarding kycfile ' + h + ':' + f
                 self.logger.error(mess)
+                if hasattr(e, 'error'):
+                    if 'message' in e.error:
+                        if 'No whitelist asset available' in e.error['message']:
+                            break
                 continue
-            mess='onboarded kycfile ' + p
-            self.logger.info(mess)
         
     def blacklist_kycfile(self, kycfile):
         return self.ocean.blacklistuser(kycfile)
                 
     def blacklist_kycfiles(self):
-        self.logger.info("blacklisting kycfiles")
-        for f in self.toblacklist:
-            p=os.path.join(self.conf["kyc_toblacklistdir"], f)
+        self.logger.info("blacklisting {} files".format(len(self.toblacklist)))
+        for h in self.toblacklist:
             try:
-                self.logger.info("blacklisting file {}".format(p))
-                txid=self.blacklist_kycfile(p)
+                f=self.path_dict[h]
+                txid=self.blacklist_kycfile(f)
                 self.pendingtx.add(txid)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when blacklisting kycfile ' + p
+                mess='error when blacklisting kycfile ' + h + ':' + f
                 self.logger.error(mess)
+                if hasattr(e, 'error'):
+                    if 'message' in e.error:
+                        if 'No whitelist asset available' in e.error['message']:
+                            break
                 continue
-            mess='blackclisted kycfile ' + p
-            self.logger.info(mess)
 
 
                     
