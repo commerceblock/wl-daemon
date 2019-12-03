@@ -161,7 +161,7 @@ class Whitelisting(DaemonThread):
                 self.pendingtx.add(txid)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when onboarding kycfile ' + h + ':' + f
+                mess='error when onboarding kycfile ' + h.hex() + ':' + f
                 self.logger.error(mess)
                 if hasattr(e, 'error'):
                     if 'message' in e.error:
@@ -181,7 +181,7 @@ class Whitelisting(DaemonThread):
                 self.pendingtx.add(txid)
             except Exception as e:
                 self.logger.error(e)
-                mess='error when blacklisting kycfile ' + h + ':' + f
+                mess='error when blacklisting kycfile ' + h.hex() + ':' + f
                 self.logger.error(mess)
                 if hasattr(e, 'error'):
                     if 'message' in e.error:
