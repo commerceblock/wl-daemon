@@ -134,7 +134,7 @@ class Whitelisting(DaemonThread):
                     }
                 )
         except Exception as e:
-            self.logger.warning("Error removing kycfile addrs{}: {}".format(kycfile, e))
+            self.logger.warning("Error deleting kycfile addrs{}: {}".format(kycfile, e))
 
     def update_status(self):
         self.logger.info("Updating status...")
