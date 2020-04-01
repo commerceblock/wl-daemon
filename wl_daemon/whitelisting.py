@@ -113,10 +113,11 @@ class Whitelisting(DaemonThread):
             self.logger.info("Saving addresses for applicant: {}".format(applicant_id))
             _,addrs=self.ocean.validatekycfile(kycfile, True)
             for addr in addrs:
-                resp = self.db.put_item(
+                self.db.put_item(
                    Item={
                         'applicant_id': applicant_id,
-                        'address': addr
+                        'address': addr,
+                        'blacklisted': False
                     }
                 )
         except Exception as e:
@@ -128,11 +129,16 @@ class Whitelisting(DaemonThread):
             self.logger.info("Deleting addresses for applicant: {}".format(applicant_id))
             _,addrs=self.ocean.validatekycfile(kycfile, True)
             for addr in addrs:
-                resp = self.db.delete_item(
-                   Key={
+                self.db.update_item(
+                    Key={
                         'address': addr
+                    },
+                    UpdateExpression='SET blacklisted = :val',
+                    ExpressionAttributeValues={
+                        ':val': True
                     }
                 )
+
         except Exception as e:
             self.logger.warning("Error deleting kycfile addrs{}: {}".format(kycfile, e))
 
