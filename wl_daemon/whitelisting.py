@@ -111,15 +111,16 @@ class Whitelisting(DaemonThread):
         try:
             applicant_id = get_id_from_kycfile(kycfile)
             self.logger.info("Saving addresses for applicant: {}".format(applicant_id))
-            _,addrs=self.ocean.validatekycfile(kycfile, True)
-            for addr in addrs:
-                self.db.put_item(
-                   Item={
-                        'applicant_id': applicant_id,
-                        'address': addr,
-                        'blacklisted': False
-                    }
-                )
+            val=self.ocean.validatekycfile(kycfile, True)
+            if val["iswhitelisted"]:
+                for addr in val["addresses"]:
+                    self.db.put_item(
+                       Item={
+                            'applicant_id': applicant_id,
+                            'address': addr,
+                            'blacklisted': False
+                        }
+                    )
         except Exception as e:
             self.logger.warning("Error saving kycfile addrs{}: {}".format(kycfile, e))
 
@@ -127,17 +128,18 @@ class Whitelisting(DaemonThread):
         try:
             applicant_id = get_id_from_kycfile(kycfile)
             self.logger.info("Deleting addresses for applicant: {}".format(applicant_id))
-            _,addrs=self.ocean.validatekycfile(kycfile, True)
-            for addr in addrs:
-                self.db.update_item(
-                    Key={
-                        'address': addr
-                    },
-                    UpdateExpression='SET blacklisted = :val',
-                    ExpressionAttributeValues={
-                        ':val': True
-                    }
-                )
+            val=self.ocean.validatekycfile(kycfile, True)
+            if not val["iswhitelisted"]:
+                for addr in val["addresses"]:
+                    self.db.update_item(
+                        Key={
+                            'address': addr
+                        },
+                        UpdateExpression='SET blacklisted = :val',
+                        ExpressionAttributeValues={
+                            ':val': True
+                        }
+                    )
 
         except Exception as e:
             self.logger.warning("Error deleting kycfile addrs{}: {}".format(kycfile, e))
